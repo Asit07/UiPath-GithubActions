@@ -129,7 +129,7 @@ function WriteLog
 	}
 }
 #Running Path
-$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+$scriptPath = "C:\Users\AsitSingh\Downloads"#Split-Path -Parent $MyInvocation.MyCommand.Path
 #log file
 $debugLog = "$scriptPath\orchestrator-package-pack.log"
 
