@@ -7,7 +7,7 @@
     "UiPath.CLI": "[23.6.8581.19168]",
     "UiPath.CLI.Windows": "[23.6.8581.19168]",
     "UiPath.Excel.Activities": "[2.21.0-preview]",
-    "UiPath.Mail.Activities": "[1.20.2]",
+    "UiPath.Mail.Activities": "[1.20.3]",
     "UiPath.System.Activities": "[23.4.4]",
     "UiPath.Testing.Activities": "[23.6.0-preview]",
     "UiPath.UIAutomation.Activities": "[23.6.1-preview]"

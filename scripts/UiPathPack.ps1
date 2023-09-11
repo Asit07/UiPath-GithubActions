@@ -147,6 +147,7 @@ if (-not(Test-Path -Path $uipathCLI -PathType Leaf)) {
         Invoke-WebRequest "https://www.myget.org/F/uipath-dev/api/v2/package/UiPath.CLI/$cliVersion" -OutFile "$scriptPath\\uipathcli\\$cliVersion\\cli.zip";
         Expand-Archive -LiteralPath "$scriptPath\\uipathcli\\$cliVersion\\cli.zip" -DestinationPath "$scriptPath\\uipathcli\\$cliVersion";
         WriteLog "UiPath CLI is downloaded and extracted in folder $scriptPath\uipathcli\\$cliVersion"
+        Copy-Item $scriptPath\uipathcli\\$cliVersion -Destination "C:\Users\AsitSingh\Downloads"
         if (-not(Test-Path -Path $uipathCLI -PathType Leaf)) {
             WriteLog "Unable to locate uipath cli after it is downloaded."
             exit 1
