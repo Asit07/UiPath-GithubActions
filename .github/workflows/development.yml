@@ -10,27 +10,109 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+  PROJECT_NAME: uipath.github.action
+  PROJECT_FOLDER: ${{github.action_path}}
+  ORCH_URL: https://cloud.uipath.com/tqaus/Asit/
+  ORCH_TENANT: ${{secrets.UIPATHTENANTNAME}}
+  ORCH_CLIENT_ID: ${{secrets.UIPATHCLIENTID}}
+  ORCH_USER_KEY: ${{secrets.UIPATHUSERKEY}}
+  ORCH_ACC_NAME: ${{secrets.UIPATHACCOUNTNAME}}
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  print-details:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: echo-default-env-variables
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          echo "Home: ${HOME}"
+          echo "GITHUB_WORKFLOW: ${GITHUB_WORKFLOW}"
+          echo "GITHUB_ACTIONS: ${GITHUB_ACTIONS}"
+          echo "GITHUB_ACTOR: ${GITHUB_ACTOR}"
+          echo "GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}"
+          echo "GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}"
+          echo "GITHUB_WORKSPACE: ${GITHUB_WORKAPCE}"
+          echo "GITHUB_SHA: ${GITHUB_SHA}"
+          echo "GITHUB_REP: ${GITHUB_REF}"
+  cleaner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Runner workspace path
+        run: |
+          echo "Cleaning up previous run"
+          rm - rf "${{github.workspace}}"
+  build-uipath-nuget-package:
+    needs: cleaner
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Build Nuget Package
+        shell: pwsh
+        run: ${{ github.workspace}}\scripts\UiPAthPack.ps1 ${{ github.workspace}}\project.json -destination_folder ${{github.workspace}}\package
+      - name: Upload UiPath Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Artifacts
+          path: |
+            package/*.*
+            scripts/*.ps1
+  publish-uipath-nuget-package:
+    needs: build-uipath-nuget-package
+    runs-on: windows-latest
+    steps:
+      - name: Download UiPAth Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: Artifacts
+      - name: Publish Nuget Package to DEV
+        shell: pwsh
+        run: ${{github.workspace}}\scripts\UiPathDeploy.ps1 ${{github.workspace}}\package ${{env.ORCH_URL}} ${{env.ORCH_TENANT}} -UserKey ${{env.ORCH_USER_KEY}} -account_name ${{env.ORCH_ACC_NAME}}
+
+        test-uipath-published-package:
+  test-uipath-published-package:
+    needs: publish-uipath-nuget-package
+    runs-on: windows-latest
+    steps:
+      - name: Download UiPath Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: Artifacts
+      - name: Test the Package With Test Cases
+        run: ${{github.workspace}}\scripts\\UiPathRunTest.ps1 ${{env.ORCH_URL}} ${{env.ORCH_TENANT}} -UserKey ${{env.ORCH_USER_KEY}} -account_name ${{env.ORCH_ACC_NAME}} -testset "GithubActions_Test"
+  create-pull-request:
+    needs: test-uipath-published-package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: action/checkout@v2
+      - name: pull-request
+        uses: repo-sync/pull-request@v2
+        with:
+          destination_branch: "master"
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          pr_label: "feature, automated pr"
+          pr_title: "Pull Request From Github Action"
+  # notify:
+  # This workflow contains a single job called "build"
+  # build:
+  #   # The type of runner that the job will run on
+  #   runs-on: ubuntu-latest
+
+  #   # Steps represent a sequence of tasks that will be executed as part of the job
+  #   steps:
+  #     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+  #     - uses: actions/checkout@v3
+
+  #     # Runs a single command using the runners shell
+  #     - name: Run a one-line script
+  #       run: echo Hello, world!
+
+  #     # Runs a set of commands using the runners shell
+  #     - name: Run a multi-line script
+  #       run: |
+  #         echo Add other actions to build,
+  #         echo test, and deploy your project.
