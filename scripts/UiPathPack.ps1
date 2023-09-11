@@ -129,7 +129,7 @@ function WriteLog
 	}
 }
 #Running Path
-$scriptPath = "C:\Users\AsitSingh\OneDrive - Tquila Automation\Documents\UiPath\GithubActions\actions"#Split-Path -Parent $MyInvocation.MyCommand.Path
+$scriptPath = #Split-Path -Parent $MyInvocation.MyCommand.Path
 #log file
 $debugLog = "$scriptPath\orchestrator-package-pack.log"
 
