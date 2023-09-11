@@ -4,6 +4,8 @@
   "description": "Blank Process",
   "main": "Main.xaml",
   "dependencies": {
+    "UiPath.CLI": "[23.6.8581.19168]",
+    "UiPath.CLI.Windows": "[23.6.8581.19168]",
     "UiPath.Excel.Activities": "[2.21.0-preview]",
     "UiPath.Mail.Activities": "[1.20.2]",
     "UiPath.System.Activities": "[23.6.0-preview]",
